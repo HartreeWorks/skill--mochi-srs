@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0f1114;
+            --bg-surface: #1a1d23;
+            --bg-card: #23272f;
+            --bg-elevated: #2a2f38;
+
+            --text-primary: #e8e6e3;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+
+            --accent-good: #4a7c59;
+            --accent-good-hover: #5a9469;
+            --accent-again: #9c4a4a;
+            --accent-again-hover: #b55a5a;
+            --accent-skip: #4b5563;
+            --accent-skip-hover: #6b7280;
+
+            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                           0 0 0 1px rgba(255, 255, 255, 0.03);
+
+            --font-display: 'Crimson Pro', Georgia, serif;
+            --font-body: 'Outfit', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* Subtle ambient gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.08), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(78, 93, 148, 0.06), transparent);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 0.5rem;
+        }
+
+        .deck-name {
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .progress {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .progress-current {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 2px;
+            background: var(--bg-elevated);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-good), #6b8f71);
+            border-radius: 1px;
+            transition: width 0.5s var(--ease-out-expo);
+        }
+
+        /* Card */
+        .card-container {
+            perspective: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            min-height: 280px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s var(--ease-out-expo),
+                        opacity 0.4s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.08) 0%,
+                rgba(255,255,255,0.02) 50%,
+                transparent 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .card.entering {
+            animation: cardEnter 0.5s var(--ease-out-back) forwards;
+        }
+
+        .card.exiting {
+            animation: cardExit 0.35s var(--ease-out-expo) forwards;
+        }
+
+        @keyframes cardEnter {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes cardExit {
+            to {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.98);
+            }
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .divider {
+            width: 40px;
+            height: 1px;
+            background: var(--text-muted);
+            margin: 1.5rem 0;
+            opacity: 0;
+            transform: scaleX(0);
+            transition: all 0.4s var(--ease-out-expo);
+        }
+
+        .divider.visible {
+            opacity: 0.5;
+            transform: scaleX(1);
+        }
+
+        .answer {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s var(--ease-out-expo);
+        }
+
+        .answer.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Markdown content styling */
+        .question code,
+        .answer code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            background: var(--bg-elevated);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            color: #c9b4f7;
+        }
+
+        .question pre,
+        .answer pre {
+            background: var(--bg-deep);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .question pre code,
+        .answer pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .question strong,
+        .answer strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .question em,
+        .answer em {
+            font-style: italic;
+        }
+
+        /* Reveal hint */
+        .reveal-hint {
+            position: absolute;
+            bottom: 1.25rem;
+            right: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover .reveal-hint {
+            opacity: 1;
+        }
+
+        .reveal-hint.hidden {
+            opacity: 0;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s var(--ease-out-expo);
+            pointer-events: none;
+        }
+
+        .actions.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .btn {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        .btn-good {
+            background: var(--accent-good);
+            color: #d1fae5;
+        }
+
+        .btn-good:hover {
+            background: var(--accent-good-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-again {
+            background: var(--accent-again);
+            color: #fce7e7;
+        }
+
+        .btn-again:hover {
+            background: var(--accent-again-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-skip {
+            background: var(--accent-skip);
+            color: var(--text-secondary);
+        }
+
+        .btn-skip:hover {
+            background: var(--accent-skip-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn kbd {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            margin-left: 0.25rem;
+        }
+
+        /* Summary screen */
+        .summary {
+            text-align: center;
+            animation: fadeIn 0.5s var(--ease-out-expo);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .summary h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .summary-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 2.5rem;
+            font-weight: 500;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value.good { color: var(--accent-good-hover); }
+        .stat-value.again { color: var(--accent-again-hover); }
+        .stat-value.skipped { color: var(--text-muted); }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-done {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-done:hover {
+            background: var(--bg-card);
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--bg-elevated);
+            border-top-color: var(--text-muted);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty {
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty h2 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 1.5rem 1rem;
+            }
+
+            .card {
+                padding: 2rem 1.5rem;
+                min-height: 240px;
+            }
+
+            .question {
+                font-size: 1.25rem;
+            }
+
+            .answer {
+                font-size: 1.1rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats {
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="loading">
+            <div class="spinner"></div>
+            <span>Loading cards...</span>
+        </div>
+    </div>
+
+    <script>
+        // Simple markdown parser for basic formatting
+        function parseMarkdown(text) {
+            if (!text) return '';
+
+            // Escape HTML first
+            let html = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Code blocks (triple backticks)
+            html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+                return `<pre><code>${code.trim()}</code></pre>`;
+            });
+
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Bold
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // Italic
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+            // Line breaks
+            html = html.replace(/\n/g, '<br>');
+
+            return html;
+        }
+
+        class ReviewApp {
+            constructor() {
+                this.cards = [];
+                this.currentIndex = 0;
+                this.revealed = false;
+                this.stats = { good: 0, again: 0, skipped: 0 };
+                this.deckName = '';
+
+                this.init();
+            }
+
+            async init() {
+                await this.loadCards();
+                this.bindKeys();
+            }
+
+            async loadCards() {
+                try {
+                    const res = await fetch('/api/cards');
+                    const data = await res.json();
+                    this.cards = data.cards;
+                    this.deckName = data.deck_name;
+
+                    if (this.cards.length === 0) {
+                        this.renderEmpty();
+                    } else {
+                        this.render();
+                    }
+                } catch (err) {
+                    console.error('Failed to load cards:', err);
+                    document.getElementById('app').innerHTML = `
+                        <div class="empty">
+                            <h2>Failed to load cards</h2>
+                            <p>Please refresh the page</p>
+                        </div>
+                    `;
+                }
+            }
+
+            bindKeys() {
+                document.addEventListener('keydown', (e) => {
+                    if (this.currentIndex >= this.cards.length) return;
+
+                    if (!this.revealed && (e.code === 'Space' || e.code === 'Enter')) {
+                        e.preventDefault();
+                        this.reveal();
+                    } else if (this.revealed) {
+                        if (e.code === 'KeyG') this.submitReview(true);
+                        else if (e.code === 'KeyA') this.submitReview(false);
+                        else if (e.code === 'KeyS' || e.code === 'ArrowRight') this.skip();
+                    }
+                });
+            }
+
+            render() {
+                if (this.currentIndex >= this.cards.length) {
+                    this.renderSummary();
+                    return;
+                }
+
+                const card = this.cards[this.currentIndex];
+                const progress = `${this.currentIndex + 1} / ${this.cards.length}`;
+                const progressPercent = ((this.currentIndex) / this.cards.length) * 100;
+
+                document.getElementById('app').innerHTML = `
+                    <div class="header">
+                        <span class="deck-name">${this.deckName}</span>
+                        <span class="progress">
+                            <span class="progress-current">${this.currentIndex + 1}</span> / ${this.cards.length}
+                        </span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+
+                    <div class="card-container">
+                        <div class="card entering" id="card" onclick="app.reveal()">
+                            <div class="card-content">
+                                <div class="question">${parseMarkdown(card.question)}</div>
+                                <div class="divider" id="divider"></div>
+                                <div class="answer" id="answer">${parseMarkdown(card.answer)}</div>
+                            </div>
+                            <span class="reveal-hint" id="hint">space to reveal</span>
+                        </div>
+                    </div>
+
+                    <div class="actions" id="actions">
+                        <button class="btn btn-again" onclick="app.submitReview(false)">
+                            Again <kbd>A</kbd>
+                        </button>
+                        <button class="btn btn-skip" onclick="app.skip()">
+                            Skip <kbd>S</kbd>
+                        </button>
+                        <button class="btn btn-good" onclick="app.submitReview(true)">
+                            Good <kbd>G</kbd>
+                        </button>
+                    </div>
+                `;
+
+                this.revealed = false;
+
+                // Remove entering animation class after it plays
+                setTimeout(() => {
+                    const card = document.getElementById('card');
+                    if (card) card.classList.remove('entering');
+                }, 500);
+            }
+
+            reveal() {
+                if (this.revealed) return;
+                this.revealed = true;
+
+                document.getElementById('divider').classList.add('visible');
+                document.getElementById('answer').classList.add('visible');
+                document.getElementById('actions').classList.add('visible');
+                document.getElementById('hint').classList.add('hidden');
+            }
+
+            async submitReview(remembered) {
+                const card = this.cards[this.currentIndex];
+
+                // Animate card exit
+                const cardEl = document.getElementById('card');
+                cardEl.classList.add('exiting');
+
+                // Submit to API
+                try {
+                    await fetch('/api/review', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            card_id: card.id,
+                            remembered: remembered
+                        })
+                    });
+
+                    if (remembered) this.stats.good++;
+                    else this.stats.again++;
+                } catch (err) {
+                    console.error('Failed to submit review:', err);
+                }
+
+                // Wait for exit animation then show next
+                setTimeout(() => {
+                    this.currentIndex++;
+                    this.render();
+                }, 350);
+            }
+
+            async skip() {
+                const cardEl = document.getElementById('card');
+                cardEl.classList.add('exiting');
+
+                try {
+                    await fetch('/api/review', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ skipped: true })
+                    });
+                    this.stats.skipped++;
+                } catch (err) {
+                    console.error('Failed to skip:', err);
+                }
+
+                setTimeout(() => {
+                    this.currentIndex++;
+                    this.render();
+                }, 350);
+            }
+
+            renderSummary() {
+                const total = this.stats.good + this.stats.again + this.stats.skipped;
+
+                document.getElementById('app').innerHTML = `
+                    <div class="summary">
+                        <h1>Session Complete</h1>
+                        <p class="summary-subtitle">${total} card${total !== 1 ? 's' : ''} reviewed</p>
+
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value good">${this.stats.good}</div>
+                                <div class="stat-label">Good</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value again">${this.stats.again}</div>
+                                <div class="stat-label">Again</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value skipped">${this.stats.skipped}</div>
+                                <div class="stat-label">Skipped</div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-done" onclick="app.done()">Done</button>
+                    </div>
+                `;
+            }
+
+            renderEmpty() {
+                document.getElementById('app').innerHTML = `
+                    <div class="empty">
+                        <h2>No cards due</h2>
+                        <p>Check back later</p>
+                    </div>
+                `;
+            }
+
+            async done() {
+                try {
+                    await fetch('/api/done', { method: 'POST' });
+                } catch (err) {
+                    // Server might close before response
+                }
+
+                document.getElementById('app').innerHTML = `
+                    <div class="summary">
+                        <h1>Server stopped</h1>
+                        <p class="summary-subtitle">You can close this tab</p>
+                    </div>
+                `;
+            }
+        }
+
+        const app = new ReviewApp();
+    </script>
+</body>
+</html>
