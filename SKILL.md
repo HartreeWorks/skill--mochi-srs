@@ -214,6 +214,28 @@ Heureuse (F)
 
 For words with masculine/feminine variations, show both forms on the back, one per line, with (M) or (F) in brackets.
 
+## Salsa Cards
+
+When user provides salsa moves, techniques, or tips:
+
+- **Front**: Dancer emoji indicators around the text: `💃 &nbsp; [Question/topic] &nbsp; 💃`
+  - The `&nbsp;` adds visual spacing between emojis and text
+- **Back**: The technique details, tips, or answer
+
+Example input: "How to start Paseo?"
+```
+💃 &nbsp; How to start Paseo? &nbsp; 💃
+---
+Left arm starts going down at step 2, then finishes at step 3.
+```
+
+Example input: "Quick end of music move"
+```
+💃 &nbsp; Quick end of music move &nbsp; 💃
+---
+Pull left hand over my left shoulder, tip
+```
+
 ### Bulk Card Display
 
 When creating multiple cards, display them in a table for easy review:
